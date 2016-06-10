@@ -55,15 +55,4 @@
 			}
 		});
 	}
-	function status(str){
-		var oldStr = $('.status > .message').text();
-		if(oldStr === str){
-			var num = parseInt($('.status > .count').text());
-			num++;
-			$('.status > .count').text(num);
-		} else {
-			$('.status > .count').text(0);
-		}
-		$('.status > .message').text(str);
-	}
 })(jQuery);

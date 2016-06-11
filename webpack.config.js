@@ -1,8 +1,8 @@
 module.exports = {
 	devtool: 'eval-source-map',
-	entry: __dirname + '/app/scroll-effect.js',
+	entry: __dirname + '/app/bundle.js',
 	output: {
 		path: __dirname + '/test',
-		filename: 'scroll-effect.dev.js'
+		filename: 'bundle.js'
 	}
 }

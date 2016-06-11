@@ -21,7 +21,6 @@
 		});
 	}
 	function fixTitle($contain, arg){
-		if(arg.beforework) arg.beforework();
 
 		var cOfs = $contain.offset();
 		var origin = cOfs.top;
@@ -57,6 +56,6 @@
 			}
 		});
 
-		if(arg.afterwork) arg.afterwork();
+		
 	}
 })(jQuery);

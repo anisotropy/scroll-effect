@@ -1,25 +1,38 @@
 (function($){
-	$.fn.scrEffectOfBgcolor = function(arg){
+	$.fn.scrEffectOfBgcolor = function(arg, option){
 		var selector = this.selector;
-		if($(selector).length) scrEffectOfBgcolor(selector, arg);
-		else $(document).ready(function(){ scrEffectOfBgcolor(selector, arg); });
+		if($(selector).length) scrEffectOfBgcolor(selector, arg, option);
+		else $(document).ready(function(){ scrEffectOfBgcolor(selector, arg, option); });
 	}
-	function scrEffectOfBgcolor(selector, arg){
+	function scrEffectOfBgcolor(selector, arg, option){
 		convArg(arg);
-		$(selector).css('background-color', arg.bgcolors[0]);
-		$(selector).css({'transition': arg.transition, '-webkit-transition': arg.transition});
 		$(selector).each(function(){
-			changeColor($(this), arg);
-			$(this).on('scroll', function(){ changeColor($(this), arg); });
+			changeColor($(this), arg, option);
+			var sectIndex = -1;
+			$(this).on('scroll', function(){
+				if(sectIndex === -1) setTransition($(this), arg, option);
+				sectIndex = changeColor($(this), arg, option, sectIndex);
+			});
 		});
 	}
 	function convArg(arg){
-		arg.bgcolors = arg.bgcolors.split(' ');
-		arg.transition = arg.transition ? arg.transition +'s' : '1s';
+		arg.background = arg.background.split(' ');
+		arg.transition = (arg.transition ? arg.transition + 's' : '1s');
 	}
-	function changeColor($contain, arg){
-		if(arg.beforework) arg.beforework();
-
+	function setTransition($contain, arg, option){
+		$contain.css({'transition': 'background-color '+arg.transition });
+		if(option.element){
+			if(option.element.background) $contain.find(option.element.background).css({'transition': 'background-color '+arg.transition});
+			if(option.element.text) $contain.find(option.element.text).css({'transition': 'color '+arg.transition});
+			if(option.element.border) $contain.find(option.element.border).css({'transition': 'border-color '+arg.transition });
+		}
+		if(option.beyond){
+			if(option.beyond.background) $contain.find(option.beyond.background).css({'transition': 'background-color '+arg.transition});
+			if(option.beyond.text) $contain.find(option.beyond.text).css({'transition': 'color '+arg.transition});
+			if(option.beyond.border) $contain.find(option.beyond.border).css({'transition': 'border-color '+arg.transition });
+		}
+	}
+	function changeColor($contain, arg, option, oldIndex){
 		var $contain, conHeight, origin;
 		if(!$contain.is('body')){
 			conHeight = $contain.outerHeight();
@@ -29,18 +42,32 @@
 			conHeight = $(window).outerHeight();
 			origin = $(window).scrollTop();
 		}
-		$contain.find(arg.section).each(function(index){
+		var curIndex = oldIndex;
+		$contain.children(option.child).each(function(index){
 			var top = $(this).offset().top - origin;
 			var bottom = top + $(this).outerHeight(true);
 			if(bottom / conHeight > 0.5 || top / conHeight >= 0.5){
-				$contain.css('background-color', arg.bgcolors[index]);
-				$(arg.background).css('background-color', arg.bgcolors[index]);
-				$(arg.text).css('color', arg.bgcolors[index]);
-				$(arg.border).css('border-color', arg.bgcolors[index]);
+				curIndex = index;
 				return false;
 			}
 		});
+		if(oldIndex !== curIndex){
+			if(option.before) option.before($contain);
 
-		if(arg.afterwork) arg.afterwork();
+			$contain.css({ 'background-color': arg.background[curIndex] });
+			if(option.element){
+				$contain.find(option.element.background).css({ 'background-color': arg.background[curIndex] });
+				$contain.find(option.element.text).css({ 'color': arg.background[curIndex] });
+				$contain.find(option.element.border).css({ 'border-color': arg.background[curIndex] });
+			}
+			if(option.beyond){
+				$(option.beyond.background).css({ 'background-color': arg.background[curIndex] });
+				$(option.beyond.text).css({ 'color': arg.background[curIndex] });
+				$(option.beyond.border).css({ 'border-color': arg.background[curIndex] });
+			}
+
+			if(option.after) option.after($contain);
+		}
+		return curIndex;
 	}
 })(jQuery);

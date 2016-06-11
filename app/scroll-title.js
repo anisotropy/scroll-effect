@@ -1,7 +1,7 @@
 (function($){
 	$.fn.scrEffectOfTitle = function(arg){
 		var selector = this.selector;
-		if($(selector).length) scrEffectOfTitle(selctor, arg);
+		if($(selector).length) scrEffectOfTitle(selector, arg);
 		else $(document).ready(function(){ scrEffectOfTitle(selector, arg); });
 	}
 	function scrEffectOfTitle(selector, arg){
@@ -21,6 +21,8 @@
 		});
 	}
 	function fixTitle($contain, arg){
+		if(arg.beforework) arg.beforework();
+
 		var cOfs = $contain.offset();
 		var origin = cOfs.top;
 		if($contain.is('body')){ origin = $(window).scrollTop(); }
@@ -54,5 +56,7 @@
 				});
 			}
 		});
+
+		if(arg.afterwork) arg.afterwork();
 	}
 })(jQuery);

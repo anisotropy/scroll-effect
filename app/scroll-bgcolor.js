@@ -7,12 +7,17 @@
 	function scrEffectOfBgcolor(selector, arg, option){
 		convArg(arg);
 		$(selector).each(function(){
-			changeColor($(this), arg, option);
 			var sectIndex = -1;
+			var active = true;
+			changeColor($(this), arg, option);
 			$(this).on('scroll', function(){
-				if(sectIndex === -1) setTransition($(this), arg, option);
-				sectIndex = changeColor($(this), arg, option, sectIndex);
+				if(active){
+					if(sectIndex < 0) setTransition($(this), arg, option);
+					sectIndex = changeColor($(this), arg, option, sectIndex);
+				}
 			});
+			$(this).on('activate-scroll-effect-bgcolor', function(){ active = true; });
+			$(this).on('deactivate-scroll-effect-bgcolor', function(){ active = false; });
 		});
 	}
 	function convArg(arg){

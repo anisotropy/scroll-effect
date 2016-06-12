@@ -25,3 +25,16 @@ $('.container').scrEffectOfBgcolor({
 		//console.log('after changing color');
 	}
 });
+
+$(document).ready(function(){
+	setTimeout(function(){
+		console.log('first');
+		$('.container:first-child').trigger('deactivate-scroll-effect-bgcolor');
+	}, 2000);
+	/*
+	setTimeout(function(){
+		console.log('second');
+		$('.container:last-child').trigger('deactivate-scroll-effect-bgcolor');
+	}, 4000);
+	*/
+});

@@ -1,7 +1,14 @@
+//$('.container').scrEffectOfTitle();
 $('.container').scrEffectOfTitle({
-	section: '.part',
-	title: '.title',
-	position: 'right'
+	section: '',
+	title: '', // default: .title
+	position: '', // left, right
+	before: function($contain){
+		//console.log('before');
+	},
+	after: function($contain){
+		//console.log('after');
+	}
 });
 $('.container').scrEffectOfBgcolor({
 	background: 'black yellow blue red',
@@ -21,15 +28,23 @@ $('.container').scrEffectOfBgcolor({
 	before: function($contain){
 		//console.log('before changing color: ' + $contain.css('background-color'));
 	},
-	after: function(){
+	after: function($contain){
 		//console.log('after changing color');
 	}
 });
 
 $(document).ready(function(){
-	setTimeout(function(){
-		console.log('first');
-		$('.container:first-child').trigger('deactivate-scroll-effect-bgcolor');
+	var active = true;
+	setInterval(function(){
+		if(active){
+			console.log('deactive');
+			$('.container:first-child').trigger('deactivate-scroll-effect-bgcolor');
+			active = false;
+		} else {
+			console.log('active');
+			$('.container:first-child').trigger('activate-scroll-effect-bgcolor');
+			active = true;
+		}
 	}, 2000);
 	/*
 	setTimeout(function(){

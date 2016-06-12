@@ -2,7 +2,7 @@
 $('.container').scrEffectOfTitle({
 	section: '',
 	title: '', // default: .title
-	position: '', // left, right
+	position: 'right', // left, right
 	before: function($contain){
 		//console.log('before');
 	},
@@ -39,10 +39,12 @@ $(document).ready(function(){
 		if(active){
 			console.log('deactive');
 			$('.container:first-child').trigger('deactivate-scroll-effect-bgcolor');
+			$('.container:first-child').trigger('deactivate-scroll-effect-title');
 			active = false;
 		} else {
 			console.log('active');
 			$('.container:first-child').trigger('activate-scroll-effect-bgcolor');
+			$('.container:first-child').trigger('activate-scroll-effect-title');
 			active = true;
 		}
 	}, 2000);

@@ -11,18 +11,23 @@
 		$(selector).children(arg.section).css({ 'position': 'relative' });
 		$(selector).children(arg.section).children(arg.title).css({ 'position': 'absolute', 'top': 0, 'left': 0 });
 		$(selector).each(function(){
-			fixTitle($(this), arg);
-			if($(this).is('body')){
-				$(window).scroll(function(){ fixTitle($('body'), arg); });
-			} else {
-				$(this).on('scroll', function(){ fixTitle($(this), arg); });
-			}
-		});
-		$(window).resize(function(){
-			$(selector).each(function(){ fixTitle($(this), arg); });
+			var active = true;
+			var $contain = $(this);
+			fixTitle($contain, arg);
+			$contain.on('scroll', function(){ if(active){
+				fixTitle($contain, arg);
+			}});
+			$contain.on('scroll', function(){ if(active){
+				fixTitle($contain, arg);
+			}});
+			$(window).resize(function(){ if(active){
+				fixTitle($contain, arg);
+			}});
+			$contain.on('activate-scroll-effect-title', function(){ active = true; });
+			$contain.on('deactivate-scroll-effect-title', function(){ active = false; fixTitle($contain, arg, false); });
 		});
 	}
-	function fixTitle($contain, arg){
+	function fixTitle($contain, arg, active){
 		if(arg.before) arg.before($contain);
 
 		var cOfs = $contain.offset();
@@ -36,7 +41,7 @@
 			var $title = $(this).children(arg.title);
 			var tLeft = 0;
 			if(arg.position === 'right') tLeft = sOfs.width - $title.outerWidth();
-			if(sOfs.top <= origin && sOfs.bottom > origin) {
+			if(active !== false && sOfs.top <= origin && sOfs.bottom > origin) {
 				if(sOfs.bottom - origin < $title.outerHeight()){
 					$title.css({
 						position: 'absolute',

@@ -10,12 +10,13 @@
 			var sectIndex = -1;
 			var active = true;
 			changeColor($(this), arg, option);
-			$(this).on('scroll', function(){
-				if(active){
-					if(sectIndex < 0) setTransition($(this), arg, option);
-					sectIndex = changeColor($(this), arg, option, sectIndex);
-				}
-			});
+			$(this).on('scroll', function(){ if(active){
+				if(sectIndex < 0) setTransition($(this), arg, option);
+				sectIndex = changeColor($(this), arg, option, sectIndex);
+			}});
+			$(window).resize(function(){ if(active){
+				sectIndex = changeColor($(this), arg, option, sectIndex);
+			}});
 			$(this).on('activate-scroll-effect-bgcolor', function(){ active = true; });
 			$(this).on('deactivate-scroll-effect-bgcolor', function(){ active = false; });
 		});

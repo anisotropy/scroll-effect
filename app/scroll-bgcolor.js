@@ -12,7 +12,7 @@
 			var $contain = $(this);
 			var sectIndex = -1;
 			var active = true;
-			changeColor($contain, arg, option);
+			changeColor($contain, arg, option, sectIndex);
 			$contain.on('scroll', function(){ if(active){
 				if(sectIndex < 0) setTransition($contain, arg, option);
 				sectIndex = changeColor($contain, arg, option, sectIndex);
@@ -58,6 +58,8 @@
 			if(bottom / conHeight > 0.5 || top / conHeight >= 0.5){
 				curIndex = index;
 				return false;
+			} else if(top === 0){
+				curIndex = 0; return false;
 			}
 		});
 		if(oldIndex !== curIndex){

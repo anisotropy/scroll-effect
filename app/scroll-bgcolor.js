@@ -4,23 +4,26 @@
 		if($(selector).length) scrEffectOfBgcolor(selector, arg, option);
 		else $(document).ready(function(){ scrEffectOfBgcolor(selector, arg, option); });
 	}
-	function scrEffectOfBgcolor(selector, arg, option){
+	function scrEffectOfBgcolor(selector, arg, option){ if(arg){
+		if(option === undefined) option = {};
 		convArg(arg);
+		$(selector).css({ 'overflow-y': 'scroll', '-webkit-overflow-scrolling': 'touch' });
 		$(selector).each(function(){
+			var $contain = $(this);
 			var sectIndex = -1;
 			var active = true;
-			changeColor($(this), arg, option);
-			$(this).on('scroll', function(){ if(active){
-				if(sectIndex < 0) setTransition($(this), arg, option);
-				sectIndex = changeColor($(this), arg, option, sectIndex);
+			changeColor($contain, arg, option);
+			$contain.on('scroll', function(){ if(active){
+				if(sectIndex < 0) setTransition($contain, arg, option);
+				sectIndex = changeColor($contain, arg, option, sectIndex);
 			}});
 			$(window).resize(function(){ if(active){
-				sectIndex = changeColor($(this), arg, option, sectIndex);
+				sectIndex = changeColor($contain, arg, option, sectIndex);
 			}});
-			$(this).on('activate-scroll-effect-bgcolor', function(){ active = true; });
-			$(this).on('deactivate-scroll-effect-bgcolor', function(){ active = false; });
+			$contain.on('activate-scroll-effect-bgcolor', function(){ active = true; });
+			$contain.on('deactivate-scroll-effect-bgcolor', function(){ active = false; });
 		});
-	}
+	}}
 	function convArg(arg){
 		arg.background = arg.background.split(' ');
 		arg.transition = (arg.transition ? arg.transition + 's' : '1s');

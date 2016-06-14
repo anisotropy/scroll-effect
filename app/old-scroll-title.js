@@ -1,56 +1,33 @@
 (function($){
-	$.fn.scrEffectOfTitle = function(arg){
+	$.fn.scrEffectOfTitle = function(arg, option){
 		var selector = this.selector;
 		if($(selector).length) scrEffectOfTitle(selector, arg);
 		else $(document).ready(function(){ scrEffectOfTitle(selector, arg); });
 	}
-	function scrEffectOfTitle(selector, arg){
+	function scrEffectOfTitle(selector, arg, option){
 		if(arg === undefined) arg = {};
 		if(!arg.title) arg.title = '.title';
 		$(selector).css({ 'overflow-y': 'scroll', '-webkit-overflow-scrolling': 'touch' });
 		$(selector).children(arg.section).css({ 'position': 'relative' });
+		$(selector).children(arg.section).children(arg.title).css({ 'position': 'absolute', 'top': 0, 'left': 0 });
 		$(selector).each(function(){
+			var active = true;
 			var $contain = $(this);
-			determinActiveWhenResize($contain, arg);
-			if(arg.option !== 'wait' && $contain.isActive) fixTitle($contain, arg);
-			$contain.on('scroll', function(){ if($contain.isActive){
+			if(option !== 'wait') fixTitle($contain, arg);
+			$contain.on('scroll', function(){ if(active){
 				fixTitle($contain, arg);
 			}});
-			$contain.on('scroll', function(){ if($contain.isActive){
+			$contain.on('scroll', function(){ if(active){
 				fixTitle($contain, arg);
 			}});
-			$(window).resize(function(){
-				determinActiveWhenResize($contain, arg);
-				if($contain.isActive) fixTitle($contain, arg);
-			});
-			$contain.on('activate-scroll-effect-title', function(){
-				$contain.isActive = true;
-				setStyle($contain, arg);
+			$(window).resize(function(){ if(active){
 				fixTitle($contain, arg);
-			});
-			$contain.on('deactivate-scroll-effect-title', function(){
-				$contain.isActive = false;
-				removeStyle($contain, arg);
-			});
+			}});
+			$contain.on('activate-scroll-effect-title', function(){ active = true; });
+			$contain.on('deactivate-scroll-effect-title', function(){ active = false; fixTitle($contain, arg, false); });
 		});
 	}
-	function setStyle($contain, arg){
-		$contain.children(arg.section).children(arg.title).css('position', 'absolute');
-	}
-	function removeStyle($contain, arg){
-		$contain.children(arg.section).children(arg.title).css({ 'position': '', 'top': '', 'left': '' });
-	}
-	function determinActiveWhenResize($contain, arg){
-		if(arg.active && window.innerWidth < arg.active) {
-			$contain.isActive = false;
-			removeStyle($contain, arg);
-		}
-		else {
-			$contain.isActive = true;
-			setStyle($contain, arg);
-		}
-	}
-	function fixTitle($contain, arg){
+	function fixTitle($contain, arg, active){
 		if(arg.before) arg.before($contain);
 
 		var cOfs = $contain.offset();
@@ -65,7 +42,7 @@
 			var $title = $section.children(arg.title);
 			var tLeft = 0;
 			if(arg.position === 'right') tLeft = sOfs.width - $title.outerWidth();
-			if(sOfs.top <= origin && sOfs.bottom > origin) {
+			if(active !== false && sOfs.top <= origin && sOfs.bottom > origin) {
 				if(sOfs.bottom - origin < $title.outerHeight()){
 					$title.css({
 						position: 'absolute',

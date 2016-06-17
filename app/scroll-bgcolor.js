@@ -1,84 +1,78 @@
 (function($){
-	$.fn.scrEffectOfBgcolor = function(arg, option){
+	$.fn.scrEffectOfBgcolor = function(arg){
 		var selector = this.selector;
-		if($(selector).length) scrEffectOfBgcolor(selector, arg, option);
-		else $(document).ready(function(){ scrEffectOfBgcolor(selector, arg, option); });
+		if($(selector).length) scrEffectOfBgcolor(selector, arg);
+		else $(document).ready(function(){ scrEffectOfBgcolor(selector, arg); });
 	}
-	function scrEffectOfBgcolor(selector, arg, option){ if(arg){
-		if(option === undefined) option = {};
+	function scrEffectOfBgcolor(selector, arg){ if(arg){
 		convArg(arg);
 		$(selector).css({ 'overflow-y': 'scroll', '-webkit-overflow-scrolling': 'touch' });
 		$(selector).each(function(){
-			var $contain = $(this);
-			var sectIndex = -1;
-			var active = true;
-			changeColor($contain, arg, option, sectIndex);
-			$contain.on('scroll', function(){ if(active){
-				if(sectIndex < 0) setTransition($contain, arg, option);
-				sectIndex = changeColor($contain, arg, option, sectIndex);
-			}});
-			$(window).resize(function(){ if(active){
-				sectIndex = changeColor($contain, arg, option, sectIndex);
-			}});
-			$contain.on('activate-scroll-effect-bgcolor', function(){ active = true; });
-			$contain.on('deactivate-scroll-effect-bgcolor', function(){ active = false; });
+			var contain = new Container($(this), arg.section);
+			contain.changeColorFirst(arg);
+			contain.$wrapper.on('scroll', function(){
+				var scrtop = contain.$self.scrollTop();
+				if(scrtop > contain.scrtop) contain.scrdir = 1; else contain.scrdir = -1;
+				contain.scrtop = scrtop;
+				if(contain.active) contain.changeColor(arg);
+			});
+			$(window).resize(function(){ if(contain.active){ contain.changeColor(arg, 'all'); }});
+			contain.$self.on('refresh-scroll-effect-bgcolor', function(){ if(contain.active){ contain.changeColor(arg, 'all'); } });
+			contain.$self.on('activate-scroll-effect-bgcolor', function(){ contain.active = true; });
+			contain.$self.on('deactivate-scroll-effect-bgcolor', function(){ contain.active = false; });
 		});
 	}}
+	function Container($contain, section){
+		this.$self = $contain;
+		this.sects = $contain.children(section);
+		this.index = 0;
+		this.active = true;
+		this.scrtop = 0;
+		this.scrdir = 1;
+		if(!$contain.is('body')){
+			this.$wrapper = $contain;
+			this.getOrigin = this.offsetTop;
+		} else {
+			this.$wrapper = $(window);
+			this.getOrigin = this.scrollTop;
+		}
+	}
+	Container.prototype.offsetTop = function(){
+		return this.$wrapper.offset().top;
+	}
+	Container.prototype.scrollTop = function(){
+		return this.$wrapper.scrollTop();
+	}
+	Container.prototype.changeColor = function(arg, all){
+		var contain = this;
+		var index = 0;
+		var $sect, top, bottom;
+		var origin = contain.getOrigin(), wrapHeight = contain.$wrapper.outerHeight();
+		var startIdx = (all !== 'all' ? contain.index : 0);
+		var increment = (all !== 'all' ? contain.scrdir : 1);
+		for(var i = startIdx; 0 <= i && i < contain.sects.length; i += increment){
+			$sect = $(contain.sects[i]);
+			top = $sect.offset().top - origin;
+			bottom = top + $sect.outerHeight(true);
+			if((contain.scrdir > 0 && bottom / wrapHeight > 0.5) || (contain.scrdir < 0 && top / wrapHeight < 0.5)){
+				index = i; break;
+			} else if(top == 0){
+				index = 0; break;
+			}
+		}
+		if(contain.index !== index || all === 'all'){
+			if(arg.before) arg.before(contain.$self, arg.background[contain.index], contain.index);
+			contain.index = index;
+			contain.$self.stop().animate({'background-color': arg.background[index]}, arg.transition);
+			if(arg.after) arg.after(contain.$self, arg.background[index], index);
+		}
+	}
+	Container.prototype.changeColorFirst = function(arg){
+		this.$self.css({'background-color': arg.background[0]});
+		if(arg.after) arg.after(this.$self, arg.background[0], 0);
+	}
 	function convArg(arg){
 		arg.background = arg.background.split(' ');
-		arg.transition = (arg.transition ? arg.transition + 's' : '1s');
-	}
-	function setTransition($contain, arg, option){
-		$contain.css({'transition': 'background-color '+arg.transition });
-		if(option.element){
-			if(option.element.background) $contain.find(option.element.background).css({'transition': 'background-color '+arg.transition});
-			if(option.element.text) $contain.find(option.element.text).css({'transition': 'color '+arg.transition});
-			if(option.element.border) $contain.find(option.element.border).css({'transition': 'border-color '+arg.transition });
-		}
-		if(option.beyond){
-			if(option.beyond.background) $contain.find(option.beyond.background).css({'transition': 'background-color '+arg.transition});
-			if(option.beyond.text) $contain.find(option.beyond.text).css({'transition': 'color '+arg.transition});
-			if(option.beyond.border) $contain.find(option.beyond.border).css({'transition': 'border-color '+arg.transition });
-		}
-	}
-	function changeColor($contain, arg, option, oldIndex){
-		var $contain, conHeight, origin;
-		if(!$contain.is('body')){
-			conHeight = $contain.outerHeight();
-			origin = $contain.offset().top;
-		}
-		else {
-			conHeight = $(window).outerHeight();
-			origin = $(window).scrollTop();
-		}
-		var curIndex = oldIndex;
-		$contain.children(option.child).each(function(index){
-			var top = $(this).offset().top - origin;
-			var bottom = top + $(this).outerHeight(true);
-			if(bottom / conHeight > 0.5 || top / conHeight >= 0.5){
-				curIndex = index;
-				return false;
-			} else if(top === 0){
-				curIndex = 0; return false;
-			}
-		});
-		if(oldIndex !== curIndex){
-			if(option.before) option.before($contain);
-
-			$contain.css({ 'background-color': arg.background[curIndex] });
-			if(option.element){
-				$contain.find(option.element.background).css({ 'background-color': arg.background[curIndex] });
-				$contain.find(option.element.text).css({ 'color': arg.background[curIndex] });
-				$contain.find(option.element.border).css({ 'border-color': arg.background[curIndex] });
-			}
-			if(option.beyond){
-				$(option.beyond.background).css({ 'background-color': arg.background[curIndex] });
-				$(option.beyond.text).css({ 'color': arg.background[curIndex] });
-				$(option.beyond.border).css({ 'border-color': arg.background[curIndex] });
-			}
-
-			if(option.after) option.after($contain);
-		}
-		return curIndex;
+		arg.transition = (arg.transition ? arg.transition * 1000 : 1000);
 	}
 })(jQuery);

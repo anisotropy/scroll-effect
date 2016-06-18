@@ -27,7 +27,7 @@
 			contain.$self.on('activate-scroll-effect-title', function(){
 				contain.active = true;
 				contain.setStyle(arg);
-				contain.fixTitle(arg);
+				contain.fixTitle(arg, 'all');
 			});
 			contain.$self.on('deactivate-scroll-effect-title', function(){
 				contain.active = false;
@@ -74,8 +74,9 @@
 	}
 	Container.prototype.fixTitle = function(arg, all){
 		var origin = this.getOrigin();
-		var $section, sOfs, $title, tLeft, sectWidth, where;
+		var $section, $title, tLeft, sectWidth, where;
 		var start, min, max, increment;
+
 		if(all !== 'all'){
 			start = this.index;
 			min = (this.index > 0 ? this.index - 1 : 0);
@@ -122,5 +123,17 @@
 			if(sOfs.bottom - origin < $title.outerHeight()) return 'above';
 			else return 'here';
 		} else return 'outside';
+	}
+	Container.prototype.getDimFuncs = {
+		clientrect: function($obj){
+			return $obj[0].getBoundingClientRect();
+		},
+		outerrect: function($obj){
+			return { width: $obj.outerWidth(), height: $obj.outerHeight() }
+		},
+		computed: function($obj){
+			var computedStyle = window.getComputedStyle($obj[0]);
+			return { width: parseFloat(computedStyle.width), height: parseFloat(computedStyle.height) };
+		}
 	}
 })(jQuery);

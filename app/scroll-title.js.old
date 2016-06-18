@@ -27,7 +27,7 @@
 			contain.$self.on('activate-scroll-effect-title', function(){
 				contain.active = true;
 				contain.setStyle(arg);
-				contain.fixTitle(arg);
+				contain.fixTitle(arg, 'all');
 			});
 			contain.$self.on('deactivate-scroll-effect-title', function(){
 				contain.active = false;
@@ -39,7 +39,6 @@
 		this.$self = $contain;
 		this.sects = $contain.children(arg.section);
 		this.index = 0;
-		this.where = 'here';
 		this.active = true;
 		this.scrtop = 0;
 		this.scrdir = 1;
@@ -73,24 +72,17 @@
 	Container.prototype.removeStyle = function(arg){
 		this.sects.children(arg.title).css({ 'position': '', 'top': '', 'left': '' });
 	}
-	Container.prototype.fixTitle = function(arg, all){ console.log(this.index, this.where);
+	Container.prototype.fixTitle = function(arg, all){
 		var origin = this.getOrigin();
 		var $section, sOfs, $title, tLeft, sectWidth, where;
 		var start, min, max, increment;
+
+		//all = 'all'; //이 부분에서 자꾸 버그가 생겨 강제로 모든 구역을 탐색하도록 했다. 나중에 수정하자.
 		if(all !== 'all'){
-			$section = $(this.sects[this.index]);
-			$title = $section.children(arg.title);
-			where = this.whereIsTheSection($section, $title, origin);
-			//if(where === this.where){
-			if(false){
-				return;
-			} else {
-				this.where = where;
-				start = this.index;
-				min = (this.index > 0 ? this.index - 1 : 0);
-				max = (this.index < this.sects.length - 1 ? this.index + 1 : this.sects.length - 1);
-				increment = this.scrdir;
-			}
+			start = this.index;
+			min = (this.index > 0 ? this.index - 1 : 0);
+			max = (this.index < this.sects.length - 1 ? this.index + 1 : this.sects.length - 1);
+			increment = this.scrdir;
 		} else {
 			start = 0; min = 0; max = this.sects.length-1; increment = 1;
 		}
@@ -115,7 +107,7 @@
 					top: this.$self.offset().top,
 					left: $section.offset().left + tLeft
 				});
-			} else if(where === 'below'){
+			} else if(where === 'outside'){
 				$title.css({
 					position: 'absolute',
 					top: 0,
@@ -133,39 +125,16 @@
 			else return 'here';
 		} else return 'outside';
 	}
-	/*
-	Container.prototype.fixTitleOfSection = function(index, origin, arg){
-		var $section = $(this.sects[index]);
-		var sOfs = $section.offset();
-		sOfs.height = $section.outerHeight();
-		sOfs.width = $section.outerWidth();
-		sOfs.bottom = sOfs.top + sOfs.height;
-		var $title = $section.children(arg.title);
-		var tLeft = 0;
-		if(arg.position === 'right') tLeft = sOfs.width - $title.outerWidth();
-		if(sOfs.top <= origin && sOfs.bottom > origin) {
-			if(sOfs.bottom - origin < $title.outerHeight()){
-				$title.css({
-					position: 'absolute',
-					top: sOfs.height - $title.outerHeight(),
-					left: tLeft
-				});
-			} else {
-				this.index = index;
-				$title.css({
-					position: 'fixed',
-					top: this.$self.offset().top,
-					left: sOfs.left + tLeft
-				});
-			}
-		} else {
-			$title.css({
-				position: 'absolute',
-				top: 0,
-				left: tLeft
-			});
+	Container.prototype.getDimFuncs = {
+		clientrect: function($obj){
+			return $obj[0].getBoundingClientRect();
+		},
+		outerrect: function($obj){
+			return { width: $obj.outerWidth(), height: $obj.outerHeight() }
+		},
+		computed: function($obj){
+			var computedStyle = window.getComputedStyle($obj[0]);
+			return { width: parseFloat(computedStyle.width), height: parseFloat(computedStyle.height) };
 		}
 	}
-	*/
-
 })(jQuery);

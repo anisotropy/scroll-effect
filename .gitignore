@@ -1,4 +1,3 @@
 *.swp
 node_modules
-test-ignore.test
-test-old.old
+app/bundle.js

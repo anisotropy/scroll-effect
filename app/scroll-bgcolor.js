@@ -17,9 +17,14 @@
 				if(contain.active) contain.changeColor(arg);
 			});
 			$(window).resize(function(){ if(contain.active){ contain.changeColor(arg, 'all'); }});
-			contain.$self.on('refresh-scroll-effect-bgcolor', function(){ if(contain.active){ contain.changeColor(arg, 'all'); } });
-			contain.$self.on('activate-scroll-effect-bgcolor', function(){ contain.active = true; });
-			contain.$self.on('deactivate-scroll-effect-bgcolor', function(){ contain.active = false; });
+			contain.$self.on('refresh-scroll-effect', function(){ if(contain.active){ contain.changeColor(arg, 'all'); } });
+			contain.$self.on('activate-scroll-effect', function(){
+				contain.active = true;
+				contain.changeColor(arg, 'all');
+			});
+			contain.$self.on('deactivate-scroll-effect', function(){
+				contain.active = false;
+			});
 		});
 	}}
 	function Container($contain, section){
@@ -43,7 +48,7 @@
 	Container.prototype.scrollTop = function(){
 		return this.$wrapper.scrollTop();
 	}
-	Container.prototype.changeColor = function(arg, all){
+	Container.prototype.changeColor = function(arg, all){ if(this.$self.is(':visible')){
 		var contain = this;
 		var index = 0;
 		var $sect, top, bottom;
@@ -66,11 +71,11 @@
 			contain.$self.stop().animate({'background-color': arg.background[index]}, arg.transition);
 			if(arg.after) arg.after(contain.$self, arg.background[index], index);
 		}
-	}
-	Container.prototype.changeColorFirst = function(arg){
+	}}
+	Container.prototype.changeColorFirst = function(arg){ if(this.$self.is(':visible')){
 		this.$self.css({'background-color': arg.background[0]});
 		if(arg.after) arg.after(this.$self, arg.background[0], 0);
-	}
+	}}
 	function convArg(arg){
 		arg.background = arg.background.split(' ');
 		arg.transition = (arg.transition ? arg.transition * 1000 : 1000);

@@ -12,27 +12,31 @@
 		$(selector).each(function(){
 			var contain = new Container($(this), arg);
 			contain.determinActive(arg);
-			if(arg.option !== 'wait' && contain.active) contain.fixTitle(arg, 'all');
+			if(arg.option !== 'wait' && contain.active && contain.widthActive) contain.fixTitle(arg, 'all');
 			contain.$wrapper.on('scroll', function(){
 				var scrtop = contain.$self.scrollTop();
 				if(scrtop > contain.scrtop) contain.scrdir = 1; else contain.scrdir = -1;
 				contain.scrtop = scrtop;
-				if(contain.active) contain.fixTitle(arg);
+				if(contain.active && contain.widthActive) contain.fixTitle(arg);
 			});
 			$(window).resize(function(){
 				contain.determinActive(arg);
-				if(contain.active) contain.fixTitle(arg, 'all');
+				if(contain.active && contain.widthActive) contain.fixTitle(arg, 'all');
 			});
-			contain.$self.on('refresh-scroll-effect-title', function(){ if(contain.active) contain.fixTitle(arg, 'all'); });
-			contain.$self.on('activate-scroll-effect-title', function(){
-				contain.active = true;
-				contain.setStyle(arg);
+			contain.$self.on('refresh-scroll-effect', function(){ if(contain.active && contain.widthActive){
 				contain.fixTitle(arg, 'all');
-			});
-			contain.$self.on('deactivate-scroll-effect-title', function(){
+			}});
+			contain.$self.on('activate-scroll-effect', function(){ if(contain.active === false){
+				contain.active = true;
+				if(contain.widthActive){
+					contain.setStyle(arg);
+					contain.fixTitle(arg, 'all');
+				}
+			}});
+			contain.$self.on('deactivate-scroll-effect', function(){ if(contain.active === true){
 				contain.active = false;
 				contain.removeStyle(arg);
-			});
+			}});
 		});
 	}
 	function Container($contain, arg){
@@ -40,6 +44,7 @@
 		this.sects = $contain.children(arg.section);
 		this.index = 0;
 		this.active = true;
+		this.widthActive = true;
 		this.scrtop = 0;
 		this.scrdir = 1;
 		if(!$contain.is('body')){
@@ -56,23 +61,25 @@
 	Container.prototype.scrollTop = function(){
 		return this.$wrapper.scrollTop();
 	}
-	Container.prototype.determinActive = function(arg){
-		if(arg.active && window.innerWidth < arg.active) {
-			this.active = false;
-			this.removeStyle(arg);
+	Container.prototype.determinActive = function(arg){ if(arg.active){
+		if(window.innerWidth < arg.active){
+			if(this.widthActive){
+				this.removeStyle(arg); this.widthActive = false;
+			}
+		} else {
+			if(!this.widthActive){
+				this.setStyle(arg);
+				this.widthActive = true;
+			}
 		}
-		else {
-			this.active = true;
-			this.setSytle(arg);
-		}
-	}
-	Container.prototype.setSytle = function(arg){
+	}}
+	Container.prototype.setStyle = function(arg){
 		this.sects.children(arg.title).css('position', 'absolute');
 	}
 	Container.prototype.removeStyle = function(arg){
-		this.sects.children(arg.title).css({ 'position': '', 'top': '', 'left': '' });
+		this.sects.children(arg.title).css({ position: '', top: '', bottom: '', left: '', right: '' });
 	}
-	Container.prototype.fixTitle = function(arg, all){
+	Container.prototype.fixTitle = function(arg, all){ if(this.$self.is(':visible')){
 		var origin = this.getOrigin();
 		var $section, $title, tLeft, sectWidth, where;
 		var start, min, max, increment;
@@ -97,25 +104,28 @@
 				$title.css({
 					position: 'absolute',
 					top: $section.outerHeight() - $title.outerHeight(),
-					left: tLeft
+					left: tLeft,
+					right: 'auto'
 				});
 			} else if(where === 'here'){
 				this.index = i;
 				$title.css({
 					position: 'fixed',
 					top: this.$self.offset().top,
-					left: $section.offset().left + tLeft
+					left: $section.offset().left + tLeft,
+					right: 'auto'
 				});
 			} else if(where === 'outside'){
 				$title.css({
 					position: 'absolute',
 					top: 0,
-					left: tLeft
+					left: tLeft,
+					right: 'auto'
 				});
 			}
 		}
 		if(arg.after) arg.after(this.$self);
-	}
+	}}
 	Container.prototype.whereIsTheSection = function($section, $title, origin){
 		var sOfs = $section.offset();
 		sOfs.bottom = sOfs.top + $section.outerHeight();
@@ -123,17 +133,5 @@
 			if(sOfs.bottom - origin < $title.outerHeight()) return 'above';
 			else return 'here';
 		} else return 'outside';
-	}
-	Container.prototype.getDimFuncs = {
-		clientrect: function($obj){
-			return $obj[0].getBoundingClientRect();
-		},
-		outerrect: function($obj){
-			return { width: $obj.outerWidth(), height: $obj.outerHeight() }
-		},
-		computed: function($obj){
-			var computedStyle = window.getComputedStyle($obj[0]);
-			return { width: parseFloat(computedStyle.width), height: parseFloat(computedStyle.height) };
-		}
 	}
 })(jQuery);
